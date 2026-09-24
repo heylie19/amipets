@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="AmiPets.API/AmiPets.API.csproj" />
+  <Project Path="AmiPets.Application/AmiPets.Application.csproj" />
+  <Project Path="AmiPets.Domain/AmiPets.Domain.csproj" />
+  <Project Path="AmiPets.Infrastructure/AmiPets.Infrastructure.csproj" />
+</Solution>
