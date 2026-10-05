@@ -1,28 +1,29 @@
 using DotNetEnv;
+using AmiPets.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Env.Load(); // Carga backend/AmiPets.API/.env
+Env.Load();
 
-var builder = WebApplication.CreateBuilder(args);
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection")
+                       ?? throw new InvalidOperationException("Falta la cadena de conexión.");
 
-// Add services to the container.
+builder.Services.AddInfrastructure(connectionString);
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Swagger
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.MapControllers();
 
