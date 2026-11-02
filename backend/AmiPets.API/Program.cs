@@ -1,34 +1,63 @@
+
 using DotNetEnv;
-using AmiPets.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using AmiPets.Infrastructure.Data;
+using AmiPets.Application.Interfaces;
+using AmiPets.Infrastructure.Repositories;
+using Scalar.AspNetCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Env.Load();
+// Cargar las variables de entorno del archivo .env
+Env.Load(Path.Combine(builder.Environment.ContentRootPath, ".env"));
 
-var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection")
-                       ?? throw new InvalidOperationException("Falta la cadena de conexión.");
+// Obtener y validar la cadena de conexión a PostgreSQL
+var connectionString = Environment.GetEnvironmentVariable(
+    "ConnectionStrings__PostgresConnection"
+);
 
-builder.Services.AddInfrastructure(connectionString);
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "No se encontró la cadena de conexión PostgresConnection en el archivo .env."
+    );
+}
 
+// Configurar la conexión a PostgreSQL
+builder.Services.AddDbContext<AmiPetsDBContext>(options =>
+    options.UseNpgsql(connectionString));
+
+// Registrar el repositorio de usuarios
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+
+// Configurar los controladores y la conversión de enums a texto
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-// Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Configurar los enums como texto en las respuestas HTTP
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+// Habilitar la documentación OpenAPI
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Swagger
+// Habilitar OpenAPI y Scalar en desarrollo
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
+app.UseHttpsRedirection();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
