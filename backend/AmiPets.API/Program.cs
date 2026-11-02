@@ -2,6 +2,7 @@
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using AmiPets.Infrastructure.Data;
+using AmiPets.Application;
 using AmiPets.Application.Interfaces;
 using AmiPets.Infrastructure.Repositories;
 using Scalar.AspNetCore;
@@ -27,6 +28,9 @@ if (string.IsNullOrWhiteSpace(connectionString))
 // Configurar la conexión a PostgreSQL
 builder.Services.AddDbContext<AmiPetsDBContext>(options =>
     options.UseNpgsql(connectionString));
+
+// Registrar los servicios y validadores de Application
+builder.Services.AddApplication();
 
 // Registrar el repositorio de usuarios
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
