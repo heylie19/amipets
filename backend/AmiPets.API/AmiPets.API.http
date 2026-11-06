@@ -1,5 +1,4 @@
 ### 1. Obtener todos los usuarios (GET)
-# Cambia el puerto por el real que te arroje la terminal
 GET http://localhost:5157/api/usuarios
 Accept: application/json
 
@@ -10,5 +9,45 @@ Content-Type: application/json
 {
   "nombre": "Maynor",
   "email": "maynor@correo.com",
-  "passwordHash": "maynor123"
+  "password": "maynor123"
 }
+
+### 3. Obtener un usuario por ID (GET) -> 200 OK
+# Cambia el 1 por un Id que exista en tu tabla
+GET http://localhost:5157/api/usuarios/1
+Accept: application/json
+
+### 4. Obtener un ID inexistente (GET) -> 404 Not Found
+GET http://localhost:5157/api/usuarios/9999
+Accept: application/json
+
+### 5. Actualizar el nombre (PUT) -> 204 No Content
+PUT http://localhost:5157/api/usuarios/1
+Content-Type: application/json
+
+{
+  "nombre": "Ana María"
+}
+
+### 6. Actualizar con nombre inválido (PUT) -> 400 Bad Request
+PUT http://localhost:5157/api/usuarios/1
+Content-Type: application/json
+
+{
+  "nombre": "A"
+}
+
+### 7. Actualizar un ID inexistente (PUT) -> 404 Not Found
+PUT http://localhost:5157/api/usuarios/9999
+Content-Type: application/json
+
+{
+  "nombre": "Nadie"
+}
+
+### 8. Eliminar un usuario (DELETE) -> 204 No Content
+# Cambia el 1 por el Id que quieras borrar
+DELETE http://localhost:5157/api/usuarios/1
+
+### 9. Eliminar un ID inexistente (DELETE) -> 404 Not Found
+DELETE http://localhost:5157/api/usuarios/9999
