@@ -1,26 +1,10 @@
-// frontend/src/components/UsuarioCard.tsx
+// frontend/src/features/usuarios/components/UsuarioCard.tsx
+import type { Usuario } from '../types/usuario.types'
 
-// --- ZONA 1: EL CONTRATO (INTERFAZ) ---
-interface UsuarioCardProps {
-    id: number;
-    nombre: string;
-    email: string;
-    rol: string;
-    estado: string;
-    verificado: boolean;
-}
-
-// --- ZONA 2: LA FIRMA ---
-export function UsuarioCard({ id, nombre, email, rol, estado, verificado }: UsuarioCardProps) {
-
-    // --- ZONA 3: EL CEREBRO (LÓGICA) ---
-    // (Sin lógica adicional por ahora)
-
-    // --- ZONA 4: EL RENDERIZADO (APLICANDO DESIGN TOKENS) ---
+export function UsuarioCard({ id, nombre, email, rol, estado, verificado }: Usuario) {
     return (
         <article className="bg-slate-800 border border-slate-700 rounded-xl p-5 flex flex-col justify-between hover:border-indigo-500 transition-colors shadow-sm">
             <div>
-                {/* Cabecera de la tarjeta: badge con el ID de base de datos y el rol */}
                 <div className="flex items-center justify-between mb-3">
                     <span className="bg-indigo-500/10 text-indigo-400 text-xs font-semibold px-2.5 py-1 rounded-md border border-indigo-500/20">
                         ID Usuario #{id}
@@ -28,11 +12,9 @@ export function UsuarioCard({ id, nombre, email, rol, estado, verificado }: Usua
                     <span className="text-xs text-slate-400 font-medium">{rol}</span>
                 </div>
 
-                {/* Nombre y correo */}
                 <h3 className="text-lg font-bold text-white">{nombre}</h3>
                 <p className="text-sm text-slate-400 mb-4 break-all">{email}</p>
 
-                {/* Estado de la cuenta y verificación */}
                 <div className="flex flex-wrap items-center gap-2 mb-5">
                     <span className={estado === 'Activo'
                         ? 'text-xs font-medium px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
@@ -45,7 +27,6 @@ export function UsuarioCard({ id, nombre, email, rol, estado, verificado }: Usua
                 </div>
             </div>
 
-            {/* Botón de acción (se habilitará cuando implementemos sesión de usuario) */}
             <button
                 disabled
                 className="w-full bg-slate-900/80 text-slate-400 text-sm font-medium py-2.5 px-4 rounded-lg cursor-not-allowed border border-slate-700"
