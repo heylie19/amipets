@@ -10,50 +10,55 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Cargar las variables de entorno del archivo .env
-Env.Load(Path.Combine(builder.Environment.ContentRootPath, ".env"));
+Env.Load();
 
-// Obtener y validar la cadena de conexión a PostgreSQL
 var connectionString = Environment.GetEnvironmentVariable(
     "ConnectionStrings__PostgresConnection"
+) ?? throw new InvalidOperationException(
+    "Falta la cadena de conexión a PostgreSQL."
 );
 
-if (string.IsNullOrWhiteSpace(connectionString))
-{
-    throw new InvalidOperationException(
-        "No se encontró la cadena de conexión PostgresConnection en el archivo .env."
-    );
-}
+var corsAllowedOrigins = Environment.GetEnvironmentVariable(
+    "CORS_ALLOWED_ORIGINS"
+) ?? "http://localhost:5173";
 
-// Configurar la conexión a PostgreSQL
+// Registro de PostgreSQL y las dependencias de AmiPets
 builder.Services.AddDbContext<AmiPetsDBContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Registrar los servicios y validadores de Application
 builder.Services.AddApplication();
-
-// Registrar el repositorio de usuarios
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 
-// Configurar los controladores y la conversión de enums a texto
+// Configuración CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PoliticaCorsAmiPets", policy =>
+    {
+        var origenes = corsAllowedOrigins.Split(
+            ',',
+            StringSplitOptions.RemoveEmptyEntries |
+            StringSplitOptions.TrimEntries
+        );
+
+        policy.WithOrigins(origenes)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+// Controladores y serialización de enumeraciones
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()
+        );
     });
 
-// Configurar los enums como texto en las respuestas HTTP
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
-
-// Habilitar la documentación OpenAPI
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Habilitar OpenAPI y Scalar en desarrollo
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -61,7 +66,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("PoliticaCorsAmiPets");
+
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
