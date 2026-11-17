@@ -32,7 +32,12 @@ export const crearUsuarioAsync = async (nuevoUsuario: CrearUsuarioDto): Promise<
     return respuesta.data
 }
 
-// 3. Extractor de errores HTTP de .NET (FluentValidation Array, ProblemDetails y Strings)
+// 3. Endpoint DELETE: eliminar físicamente un usuario en PostgreSQL (204 No Content, sin body)
+export const eliminarUsuarioAsync = async (id: number): Promise<void> => {
+    await apiClient.delete(`/usuarios/${id}`)
+}
+
+// 4. Extractor de errores HTTP de .NET (FluentValidation Array, ProblemDetails y Strings)
 export const extraerMensajeErrorBackend = (error: unknown): string => {
     if (axios.isAxiosError(error)) {
         // Caso A: el servidor .NET está apagado o el navegador bloqueó por CORS
