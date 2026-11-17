@@ -14,35 +14,35 @@ export function UsuariosView() {
   const [mostrarFormulario, setMostrarFormulario] = useState<boolean>(false)
 
   useEffect(() => {
-    obtenerUsuariosAsync()
-      .then((datosDesdePostgres) => {
+    // La función del efecto no puede ser async: declaramos una async interna y la invocamos
+    const cargarUsuarios = async () => {
+      try {
+        const datosDesdePostgres = await obtenerUsuariosAsync() // Promise<Usuario[]> -> Usuario[]
         setUsuarios(datosDesdePostgres)
         setErrorRed(null)
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Auditoría de Error en la Petición HTTP:', error)
         setErrorRed(extraerMensajeErrorBackend(error))
-      })
-      .finally(() => {
+      } finally {
         setCargando(false)
-      })
+      }
+    }
+
+    void cargarUsuarios()
   }, [])
 
-  // Inserción inmutable: nuevo arreglo con spread
   const manejarUsuarioCreado = (nuevoUsuarioDesdeBD: Usuario) => {
     setUsuarios((usuariosActuales) => [...usuariosActuales, nuevoUsuarioDesdeBD])
     setMostrarFormulario(false)
   }
 
-  // Eliminación: primero el servidor (PostgreSQL), después la pantalla
   const manejarEliminar = async (id: number) => {
     const confirmado = window.confirm('¿Eliminar este usuario? El registro se borra de PostgreSQL.')
     if (!confirmado) return
 
     try {
       setErrorEliminar(null)
-      await eliminarUsuarioAsync(id) // DELETE /api/usuarios/{id} -> 204 No Content
-      // .filter() devuelve un arreglo NUEVO sin el usuario eliminado -> dispara el Re-render
+      await eliminarUsuarioAsync(id)
       setUsuarios((usuariosActuales) => usuariosActuales.filter((u) => u.id !== id))
     } catch (error) {
       console.error('🚨 Rechazo del DELETE en el Backend .NET:', error)
@@ -58,7 +58,7 @@ export function UsuariosView() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 mb-6 border-b border-slate-800">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Usuarios de LensBook</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Usuarios de AmiPets</h1>
           <p className="text-slate-400 text-sm mt-1">
             Conectado en tiempo real vía HTTP/CORS con <code className="text-indigo-400 font-mono">PostgreSQL</code>.
           </p>
@@ -94,7 +94,6 @@ export function UsuariosView() {
         </span>
       </div>
 
-      {/* Banner de error de la operación DELETE */}
       {errorEliminar && (
         <div className="mb-6 bg-red-950/60 border border-red-500/40 rounded-lg p-3 text-xs text-red-300 flex items-center gap-2">
           <span className="text-base">🛡️</span>
